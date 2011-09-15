@@ -1,0 +1,59 @@
+--- Modules/Setup.dist~ 2010-08-21 19:40:30.000000000 +0800
++++ Modules/Setup.dist	2011-09-10 17:46:14.317875000 +0800
+@@ -207,14 +207,14 @@ GLHACK=-Dclear=__GLclear
+ #_csv _csv.c
+ 
+ # Socket module helper for socket(2)
+-#_socket socketmodule.c
++_socket socketmodule.c
+ 
+ # Socket module helper for SSL support; you must comment out the other
+ # socket line above, and possibly edit the SSL variable:
+-#SSL=/usr/local/ssl
+-#_ssl _ssl.c \
+-#	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
+-#	-L$(SSL)/lib -lssl -lcrypto
++SSL=/opt/slapos/parts/openssl
++_ssl _ssl.c \
++	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
++	-L$(SSL)/lib -lssl -lcrypto
+ 
+ # The crypt module is now disabled by default because it breaks builds
+ # on many systems (where -lcrypt is needed), e.g. Linux (I believe).
+@@ -248,14 +248,14 @@ GLHACK=-Dclear=__GLclear
+ # Message-Digest Algorithm, described in RFC 1321.  The necessary files
+ # md5.c and md5.h are included here.
+ 
+-#_md5 md5module.c md5.c
++_md5 md5module.c md5.c
+ 
+ 
+ # The _sha module implements the SHA checksum algorithms.
+ # (NIST's Secure Hash Algorithms.)
+-#_sha shamodule.c
+-#_sha256 sha256module.c
+-#_sha512 sha512module.c
++_sha shamodule.c
++_sha256 sha256module.c
++_sha512 sha512module.c
+ 
+ 
+ # SGI IRIX specific modules -- off by default.
+--- Modules/_io/_iomodule.h~	2009-12-14 03:19:07.000000000 +0800
++++ Modules/_io/_iomodule.h	2011-09-10 17:40:11.317875000 +0800
+@@ -72,7 +72,7 @@ typedef struct {
+     PyObject *filename; /* Not used, but part of the IOError object */
+     Py_ssize_t written;
+ } PyBlockingIOErrorObject;
+-PyAPI_DATA(PyObject *) PyExc_BlockingIOError;
++extern PyObject * PyExc_BlockingIOError;
+ 
+ /*
+  * Offset type for positioning.
+--- Lib/plat-generic/regen~	2011-09-10 22:39:45.536625000 +0800
++++ Lib/plat-generic/regen	2011-09-10 22:36:43.302250000 +0800
+@@ -1,3 +1,3 @@
+ #! /bin/sh
+ set -v
+-python$EXE ../../Tools/scripts/h2py.py -i '(u_long)' /usr/include/netinet/in.h
++python$EXE -S ../../Tools/scripts/h2py.py -i '(u_long)' /usr/include/netinet/in.h
