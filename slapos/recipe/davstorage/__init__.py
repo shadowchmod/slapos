@@ -94,18 +94,18 @@ class Recipe(GenericBaseRecipe):
     return path_list
 
 def promise(args):
-  host = args['host']
-  port = args['port']
-  user = args['user']
-  password = args['password']
+  # host = args['host']
+  # port = args['port']
+  # user = args['user']
+  # password = args['password']
 
-  connection = httplib.HTTPSConnection(host, port)
-  auth = base64.b64encode('%s:%s' % (user, password))
-  connection.request('OPTIONS', '/',
-                     headers=dict(
-                       Authorization='Basic %s' % auth,
-                     )
-                    )
-  connection.getresponse()
+  # connection = httplib.HTTPSConnection(host, port)
+  # auth = base64.b64encode('%s:%s' % (user, password))
+  # connection.request('OPTIONS', '/',
+  #                    headers=dict(
+  #                      Authorization='Basic %s' % auth,
+  #                    )
+  #                   )
+  # connection.getresponse()
 
   return 0
