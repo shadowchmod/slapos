@@ -79,13 +79,14 @@ class Recipe(GenericBaseRecipe):
     software_path_list = json.loads(self.options['software-path-list'])
     if software_path_list:
       CONFIG["software_path_list"] += "[software_list]"
+      path_list = []
       for path in software_path_list:
         if path.startswith("http"):
           full_path = path
         else:
           full_path = os.path.join(CONFIG["slapos_directory"], path)
-        CONFIG["software_path_list"] += \
-            "\npath_%s = %s" % (software_path_list.index(path), full_path)
+        path_list.append(full_path)
+      CONFIG["software_path_list"] += "\npath_list = %s" % ",".join(path_list)
 
     value = StringIO.StringIO()
     config_repository_list.write(value)
