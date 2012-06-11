@@ -77,16 +77,15 @@ class Recipe(GenericBaseRecipe):
 
     CONFIG["software_path_list"] = ""
     software_path_list = json.loads(self.options['software-path-list'])
-    if software_path_list:
-      CONFIG["software_path_list"] += "[software_list]"
-      path_list = []
-      for path in software_path_list:
-        if path.startswith("http"):
-          full_path = path
-        else:
-          full_path = os.path.join(CONFIG["slapos_directory"], path)
-        path_list.append(full_path)
-      CONFIG["software_path_list"] += "\npath_list = %s" % ",".join(path_list)
+    if not software_path_list and \
+        self.options["test-suite"] == "ERP5UserInterface":
+      default_software_url = "http://git.erp5.org/gitweb/slapos.git/" + \
+                             "blob_plain/refs/heads/erp5testnode:/" + \
+                             "software/seleniumrunner/software.cfg"
+      software_path_list.append(default_software_url)
+
+    CONFIG["software_path_list"] += \
+        "[software_list]\npath_list = %s" % ",".join(software_path_list)
 
     value = StringIO.StringIO()
     config_repository_list.write(value)
