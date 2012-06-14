@@ -75,15 +75,7 @@ class Recipe(GenericBaseRecipe):
                                    repository['buildout_section_id'])
       i += 1
 
-    CONFIG["software_path_list"] = ""
     software_path_list = json.loads(self.options['software-path-list'])
-    if not software_path_list and \
-        self.options["test-suite"] == "ERP5UserInterface":
-      default_software_url = "http://git.erp5.org/gitweb/slapos.git/" + \
-                             "blob_plain/refs/heads/erp5testnode:/" + \
-                             "software/seleniumrunner/software.cfg"
-      software_path_list.append(default_software_url)
-
     CONFIG["software_path_list"] += \
         "[software_list]\npath_list = %s" % ",".join(software_path_list)
 
