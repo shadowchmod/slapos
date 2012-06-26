@@ -76,8 +76,10 @@ class Recipe(GenericBaseRecipe):
       i += 1
 
     software_path_list = json.loads(self.options['software-path-list'])
-    CONFIG["software_path_list"] += \
-        "[software_list]\npath_list = %s" % ",".join(software_path_list)
+    if software_path_list:
+      CONFIG["software_path_list"] = "[software_list]"
+      CONFIG["software_path_list"] += \
+          "\npath_list = %s" % ",".join(software_path_list)
 
     value = StringIO.StringIO()
     config_repository_list.write(value)
