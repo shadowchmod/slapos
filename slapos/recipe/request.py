@@ -48,7 +48,7 @@ class Recipe(object):
     self.isSlave = False
     if 'slave' in options:
       self.isSlave = options['slave'].lower() in ['y', 'yes', 'true', '1']
-
+    print '\n Slave : %s \n' % self.isSlave
     self.return_parameters = []
     if 'return' in options:
       self.return_parameters = [str(parameter).strip()
@@ -71,7 +71,8 @@ class Recipe(object):
       for config_parameter in options['config'].split():
         partition_parameter_kw[config_parameter] = \
             options['config-%s' % config_parameter]
-
+    print 'from : %s \n' % options['partition-id']
+    print 'requested %s (%s), parameters : %s \n\n' % (options['name'],software_type,partition_parameter_kw)
     self.instance = self.request(options['software-url'], software_type,
       options['name'], partition_parameter_kw=partition_parameter_kw,
       filter_kw=filter_kw, shared=self.isSlave)

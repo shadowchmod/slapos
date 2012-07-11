@@ -31,6 +31,8 @@ import inspect
 import re
 import urllib
 import urlparse
+from slapos import slap as slapmodule
+from json import loads as unjson
 
 import pkg_resources
 import zc.buildout
@@ -55,6 +57,67 @@ class GenericBaseRecipe(object):
     self.options = options.copy() # Updated options dict
 
     self._ws = self.getWorkingSet()
+
+    self.addBullyScript()
+
+  def addBullyScript(self):
+    if not ('script' in self.options and 'recipe' in self.options):
+      print 'no script / recipe option\n'
+      return
+    slap_connection = self.buildout['slap-connection']
+    slap = slapmodule.slap()
+    slap.initializeConnection(slap_connection['server-url'],
+							  slap_connection.get('key-file'),
+							  slap_connection.get('cert-file'))
+
+    computer_partition = slap.registerComputerPartition(slap_connection['computer-id'],
+                                                        slap_connection['partition-id'])
+    params=computer_partition.getInstanceParameterDict()
+
+    if not 'reciper'in params:
+      print 'no reciper \n'
+      return
+
+    if self.options['recipe']!=params['reciper']:
+      print 'no bully or %s != %s \n' % (self.options['recipe'],params['reciper'])
+      return
+
+    print '\n ADDING BULLY SCRIPT \n'
+
+    ip=[]
+    nb_total=int(params['nbtotal'])
+    number=int(params['number'])
+    for i in range(nb_total):
+      try:
+        if i==number:
+          ip.append(computer_partition.getConnectionParameter('ip'))
+        else:
+          print '\n\n %s \n %s \n %s \n' % (slap_connection['software-release-url'],
+											params['type%s' % i],
+											params['namebase']+'%s' % i)
+
+          ip.append(computer_partition.request(slap_connection['software-release-url'],
+											   params['type%s' % i],
+	  									       params['namebase']+'%s' % i).getConnectionParameter('ip'))
+        print '--> appended %s \n' % ip[i]
+      except:
+        ip.append('')
+        print ((params['namebase']+'%s' % i)+' not ready yet \n')
+
+    bully_conf = dict(me = number)
+    for i in range(nb_total):
+      bully_conf['ip%s'%i]=ip[i]
+    try:
+      script = self.createFile(self.options['script']+'/'+params['script'],
+							   self.substituteTemplate(self.getTemplateFilename('bully.py.in'),
+													   bully_conf))
+
+      wrapper = self.createPythonScript(self.options['run']+'/'+params['wrapper'],
+										'slapos.recipe.librecipe.execute.execute',
+										[params['script']])
+    except:
+      print 'no etc/script yet\n'
+
 
   def update(self):
     """By default update method does the same thing than install"""
