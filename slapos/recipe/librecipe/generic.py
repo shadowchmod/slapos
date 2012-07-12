@@ -74,6 +74,7 @@ class GenericBaseRecipe(object):
                                                         slap_connection['partition-id'])
     params=computer_partition.getInstanceParameterDict()
 
+
     if not 'reciper'in params:
       print 'no reciper \n'
       return
@@ -84,25 +85,12 @@ class GenericBaseRecipe(object):
 
     print '\n ADDING BULLY SCRIPT \n'
 
-    ip=[]
+    ip=params['ip-list'].split()
     nb_total=int(params['nbtotal'])
     number=int(params['number'])
-    for i in range(nb_total):
-      try:
-        if i==number:
-          ip.append(computer_partition.getConnectionParameter('ip'))
-        else:
-          print '\n\n %s \n %s \n %s \n' % (slap_connection['software-release-url'],
-											params['type%s' % i],
-											params['namebase']+'%s' % i)
-
-          ip.append(computer_partition.request(slap_connection['software-release-url'],
-											   params['type%s' % i],
-	  									       params['namebase']+'%s' % i).getConnectionParameter('ip'))
-        print '--> appended %s \n' % ip[i]
-      except:
-        ip.append('')
-        print ((params['namebase']+'%s' % i)+' not ready yet \n')
+    typelist = params['type-list'].split()
+    print 'number %s %s \n' % (number,params['ip-list'].split())
+    print 'IP --- > %s\n'%ip
 
     bully_conf = dict(me = number)
     for i in range(nb_total):
