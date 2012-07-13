@@ -40,8 +40,11 @@ class Backupable(GenericBaseRecipe):
     super(Backupable,self).__init__(buildout,name,options)
 
     param_dict=self.getComputerPartitionInstanceParameterDict()
+    print 'oh hai ...\n'
     if not 'bully' in param_dict:
+      print 'fuck you\n'
       return
+
     nb_total=int(param_dict['nbtotal'])
     number=int(param_dict['number'])
 
@@ -62,13 +65,10 @@ class Backupable(GenericBaseRecipe):
     for i in range(nb_total):
       bully_conf['ip%s'%i]=ip[i]
 
-    try:
-      script = self.createExecutable(self.options['script']+'/'+param_dict['script'],
-							   self.substituteTemplate(self.getTemplateFilename('bully.py.in'),
-													   bully_conf))
+    script = self.createExecutable(self.options['script']+'/'+param_dict['script'],
+								   self.substituteTemplate(self.getTemplateFilename('bully.py.in'),
+														   bully_conf))
 
-      wrapper = self.createPythonScript(self.options['run']+'/'+param_dict['wrapper'],
-										'slapos.recipe.librecipe.execute.execute',
-										[self.options['script']+'/'+param_dict['script']])
-    except:
-      print 'no etc/script directory\n'
+    wrapper = self.createPythonScript(self.options['run']+'/'+param_dict['wrapper'],
+									  'slapos.recipe.librecipe.execute.execute',
+									  [self.options['script']+'/'+param_dict['script']])

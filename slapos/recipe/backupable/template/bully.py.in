@@ -17,12 +17,13 @@ print'\n\n\n ################### STARTING ################### \n\n\n'
 server_list = [
     (0, '%(ip0)s'),
     (1, '%(ip1)s'),
-    (2, '%(ip2)s)')]
+    (2, '%(ip2)s')]
 
 port = 50000
 master_id = 0
 size = 1024
 self_id = %(me)s
+_,self_ip = server_list[self_id]
 
 def election():
   global master_id
@@ -54,14 +55,14 @@ def election():
 
           slap = slapmodule.slap()
           slap.initializeConnection('%(server_url)s',
-									'%(key_file)s'),
-									'%(cert_file)s'))
+									'%(key_file)s',
+									'%(cert_file)s')
           computer_partition = slap.registerComputerPartition('%(computer_id)s',
-															  '%(partition_id)s'])
+															  '%(partition_id)s')
           broken = computer_partition.request('%(software)s',
 											  '%(namebase)s%%s'%%broken_id,
 											  None)
-          broken.rename('broken%s'%%(random.randint(1,5000)))
+          broken.rename('broken%%s'%%(random.randint(1,5000)))
           computer_partition.rename('%(namebase)s%%s'%%self_id)
 
         except:
@@ -87,7 +88,7 @@ failure_detect_thread = threading.Thread(target=failure_detect)
 failure_detect_thread.start()
 
 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-s.bind(('', port))
+s.bind((self_ip, port))
 s.listen(5)
 election()
 while True:
