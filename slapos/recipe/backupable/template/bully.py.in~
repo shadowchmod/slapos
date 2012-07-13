@@ -6,17 +6,13 @@ import threading
 import time
 import sys
 
-## Just a dirty log
-sys.stdout.close()
-sys.stdout = open('log','w')
-
 print'\n\n\n ################### STARTING ################### \n\n\n'
 
 # IPV6 addresses for each one
 server_list = [
-    (0, %(ip0)s),
-    (1, %(ip1)s),
-    (2, %(ip2)s)]
+    (0, '%(ip0)s'),
+    (1, '%(ip1)s'),
+    (2, '%(ip2)s)')]
 
 port = 50000
 master_id = 0

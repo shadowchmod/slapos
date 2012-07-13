@@ -58,55 +58,6 @@ class GenericBaseRecipe(object):
 
     self._ws = self.getWorkingSet()
 
-    self.addBullyScript()
-
-  def addBullyScript(self):
-    if not ('script' in self.options and 'recipe' in self.options):
-      print 'no script / recipe option\n'
-      return
-    slap_connection = self.buildout['slap-connection']
-    slap = slapmodule.slap()
-    slap.initializeConnection(slap_connection['server-url'],
-							  slap_connection.get('key-file'),
-							  slap_connection.get('cert-file'))
-
-    computer_partition = slap.registerComputerPartition(slap_connection['computer-id'],
-                                                        slap_connection['partition-id'])
-    params=computer_partition.getInstanceParameterDict()
-
-
-    if not 'reciper'in params:
-      print 'no reciper \n'
-      return
-
-    if self.options['recipe']!=params['reciper']:
-      print 'no bully or %s != %s \n' % (self.options['recipe'],params['reciper'])
-      return
-
-    print '\n ADDING BULLY SCRIPT \n'
-
-    ip=params['ip-list'].split()
-    nb_total=int(params['nbtotal'])
-    number=int(params['number'])
-    typelist = params['type-list'].split()
-    print 'number %s %s \n' % (number,params['ip-list'].split())
-    print 'IP --- > %s\n'%ip
-
-    bully_conf = dict(me = number)
-    for i in range(nb_total):
-      bully_conf['ip%s'%i]=ip[i]
-    try:
-      script = self.createFile(self.options['script']+'/'+params['script'],
-							   self.substituteTemplate(self.getTemplateFilename('bully.py.in'),
-													   bully_conf))
-
-      wrapper = self.createPythonScript(self.options['run']+'/'+params['wrapper'],
-										'slapos.recipe.librecipe.execute.execute',
-										[params['script']])
-    except:
-      print 'no etc/script yet\n'
-
-
   def update(self):
     """By default update method does the same thing than install"""
     return self.install()
@@ -141,7 +92,7 @@ class GenericBaseRecipe(object):
 
   def createPythonScript(self, name, absolute_function, arguments=''):
     """Create a python script using zc.buildout.easy_install.scripts
-
+ok o
      * function should look like 'module.function', or only 'function'
        if it is a builtin function."""
     absolute_function = tuple(absolute_function.rsplit('.', 1))
@@ -178,6 +129,17 @@ class GenericBaseRecipe(object):
     name = caller_frame.f_globals['__name__']
     return pkg_resources.resource_filename(name,
         'template/%s' % template_name)
+
+  def getComputerPartitionInstanceParameterDict(self):
+    slap_connection = self.buildout['slap-connection']
+    slap = slapmodule.slap()
+    slap.initializeConnection(slap_connection['server-url'],
+							  slap_connection.get('key-file'),
+							  slap_connection.get('cert-file'))
+
+    computer_partition = slap.registerComputerPartition(slap_connection['computer-id'],
+                                                        slap_connection['partition-id'])
+    return computer_partition.getInstanceParameterDict()
 
   def generatePassword(self, len_=32):
     # TODO: implement a real password generator which remember the last

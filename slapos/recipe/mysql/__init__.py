@@ -30,8 +30,9 @@ import subprocess
 
 from slapos.recipe.librecipe import GenericBaseRecipe
 from slapos.recipe.librecipe import filehash
+from slapos.recipe.backupable import Backupable
 
-class Recipe(GenericBaseRecipe):
+class Recipe(Backupable):
 
   def _options(self, options):
     options['password'] = self.generatePassword()
