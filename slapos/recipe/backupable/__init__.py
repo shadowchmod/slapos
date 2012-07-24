@@ -24,10 +24,10 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 ##############################################################################
-from slapos import slap as slapmodule
 from slapos.recipe.librecipe import GenericBaseRecipe
 
 import sys
+import os
 
 
 class Backupable(GenericBaseRecipe):
@@ -37,38 +37,49 @@ class Backupable(GenericBaseRecipe):
 
   def __init__(self, buildout, name, options):
     """Recipe initialisation"""
-    super(Backupable,self).__init__(buildout,name,options)
+    super(Backupable, self).__init__(buildout, name, options)
+    param_dict = self.getComputerPartitionInstanceParameterDict()
 
-    param_dict=self.getComputerPartitionInstanceParameterDict()
-    print 'oh hai ...\n'
-    if not 'bully' in param_dict:
-      print 'fuck you\n'
+    if 'bully' in param_dict:
+      self.createBackupScript(param_dict)
+
+  def createBackupScript(self, param_dict):
+    self_id = int(param_dict['number'])
+    nbtotal = int(param_dict['nbtotal'])
+    ip = param_dict['ip-list'].split()
+    if len(ip) < nbtotal:
+      print 'IPs not gathered yet (got %s) and length is %s \n' % (ip, len(ip))
       return
 
-    nb_total=int(param_dict['nbtotal'])
-    number=int(param_dict['number'])
-
-    ip=param_dict['ip-list'].split()+['' for i in range(nb_total)]
     slap_connection = self.buildout['slap-connection']
 
-    bully_conf = dict(me = number,
-					  executable=sys.executable,
-					  syspath=sys.path,
+    path_conf = os.path.join(self.options['script'], 'conf.in')
+    path_bully = os.path.join(self.options['script'], param_dict['script'])
+
+    bully_conf = dict(self_id=self_id,
+                      ip_list=ip,
+                      executable=sys.executable,
+                      syspath=sys.path,
                       server_url=slap_connection['server-url'],
-					  key_file=slap_connection.get('key-file'),
-					  cert_file=slap_connection.get('cert-file'),
-					  computer_id=slap_connection['computer-id'],
-					  partition_id=slap_connection['partition-id'],
-					  software=slap_connection['software-release-url'],
-					  namebase=param_dict['namebase'])
+                      key_file=slap_connection.get('key-file'),
+                      cert_file=slap_connection.get('cert-file'),
+                      computer_id=slap_connection['computer-id'],
+                      partition_id=slap_connection['partition-id'],
+                      software=slap_connection['software-release-url'],
+                      namebase=param_dict['namebase'],
+                      confpath=path_conf)
 
-    for i in range(nb_total):
-      bully_conf['ip%s'%i]=ip[i]
+    conf = self.createFile(path_conf,
+                           self.substituteTemplate(
+                           self.getTemplateFilename('conf.in.in'),
+                           bully_conf))
 
-    script = self.createExecutable(self.options['script']+'/'+param_dict['script'],
-								   self.substituteTemplate(self.getTemplateFilename('bully.py.in'),
-														   bully_conf))
+    script = self.createExecutable(path_bully,
+                                   self.substituteTemplate(
+                                   self.getTemplateFilename('bully.py.in'),
+                                   bully_conf))
 
-    wrapper = self.createPythonScript(self.options['run']+'/'+param_dict['wrapper'],
-									  'slapos.recipe.librecipe.execute.execute',
-									  [self.options['script']+'/'+param_dict['script']])
+    wrapper = self.createPythonScript(
+        os.path.join(self.options['run'], param_dict['wrapper']),
+        'slapos.recipe.librecipe.execute.execute',
+        [path_bully])

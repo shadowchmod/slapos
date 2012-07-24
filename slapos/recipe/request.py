@@ -28,6 +28,7 @@ import logging
 
 from slapos import slap as slapmodule
 
+
 class Recipe(object):
 
   def __init__(self, buildout, name, options):
@@ -72,7 +73,9 @@ class Recipe(object):
         partition_parameter_kw[config_parameter] = \
             options['config-%s' % config_parameter]
     print 'from : %s \n' % options['partition-id']
-    print 'requested %s (%s), parameters : %s \n\n' % (options['name'],software_type,partition_parameter_kw)
+    print 'requested %s (%s), parameters : %s \n\n' % (options['name'],
+                                                       software_type,
+                                                       partition_parameter_kw)
     self.instance = self.request(options['software-url'], software_type,
       options['name'], partition_parameter_kw=partition_parameter_kw,
       filter_kw=filter_kw, shared=self.isSlave)
