@@ -49,7 +49,6 @@ class Backupable(GenericBaseRecipe):
     ip = param_dict['ip-list'].split()
     if len(ip) < nbtotal:
       print 'IPs not gathered yet (got %s) and length is %s \n' % (ip, len(ip))
-      return
 
     slap_connection = self.buildout['slap-connection']
 
@@ -68,18 +67,20 @@ class Backupable(GenericBaseRecipe):
                       software=slap_connection['software-release-url'],
                       namebase=param_dict['namebase'],
                       confpath=path_conf)
+    try:
+      conf = self.createFile(path_conf,
+                             self.substituteTemplate(
+                             self.getTemplateFilename('conf.in.in'),
+                             bully_conf))
 
-    conf = self.createFile(path_conf,
-                           self.substituteTemplate(
-                           self.getTemplateFilename('conf.in.in'),
-                           bully_conf))
+      script = self.createExecutable(path_bully,
+                                     self.substituteTemplate(
+                                     self.getTemplateFilename('bully.py.in'),
+                                     bully_conf))
 
-    script = self.createExecutable(path_bully,
-                                   self.substituteTemplate(
-                                   self.getTemplateFilename('bully.py.in'),
-                                   bully_conf))
-
-    wrapper = self.createPythonScript(
-        os.path.join(self.options['run'], param_dict['wrapper']),
-        'slapos.recipe.librecipe.execute.execute',
-        [path_bully])
+      wrapper = self.createPythonScript(
+          os.path.join(self.options['run'], param_dict['wrapper']),
+          'slapos.recipe.librecipe.execute.execute',
+          [path_bully])
+    except IOError:
+      pass

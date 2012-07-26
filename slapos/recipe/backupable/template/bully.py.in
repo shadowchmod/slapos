@@ -11,13 +11,11 @@ sys.path[:] = %(syspath)s
 from slapos import slap as slapmodule
 
 port = 50000
-master_id = 0
 size = 1024
 wait = True
 
 
 def loadConnectionInfos():
-  global master_id
   connectionInfos = {}
   file = open('%(confpath)s', 'r')
   params = file.read().split('\n')
@@ -34,22 +32,24 @@ def loadConnectionInfos():
 
 
 def rename_broken_and_stop():
-  slap = slapmodule.slap()
-  slap.initializeConnection('%(server_url)s',
-                            '%(key_file)s',
-                            '%(cert_file)s')
-  computer_partition = slap.registerComputerPartition('%(computer_id)s',
-                                                      '%(partition_id)s')
-  broken = computer_partition.request('%(software)s', 'frozen', '%(namebase)s0')
+  try:
+    slap = slapmodule.slap()
+    slap.initializeConnection('%(server_url)s',
+                              '%(key_file)s',
+                              '%(cert_file)s')
+    computer_partition = slap.registerComputerPartition('%(computer_id)s',
+                                                        '%(partition_id)s')
+    broken = computer_partition.request('%(software)s', 'frozen', '%(namebase)s0')
 
-  broken.rename('broken-%%s' %% (time.strftime("%%d-%%b_%%H:%%M:%%S", time.gmtime())))
-  broken.stopped()
-  computer_partition.rename('%(namebase)s0')
-  print 'renaming done\n'
-
+    broken.rename('broken-%%s' %% (time.strftime("%%d-%%b_%%H:%%M:%%S", time.gmtime())))
+    broken.stopped()
+    computer_partition.rename('%(namebase)s0')
+    print 'renaming done\n'
+  except slapos.slap.slap.ServerError:
+    print 'Internal server error\n'
 
 def election():
-  global master_id, wait
+  global wait
   connection = loadConnectionInfos()
   message = "%%s, %%s" %% (connection['self_id'], "Election")
   victory = True
@@ -70,7 +70,6 @@ def election():
 
   if victory:
     wait = True
-    master_id = connection['self_id']
     for (remote_id, addr) in connection['server_list']:
       if remote_id < connection['self_id']:
         try:
@@ -90,17 +89,15 @@ def failure_detect():
   while True:
     time.sleep(30)
     if wait:
-      print 'waiting 10 minutes\n'
-      time.sleep(10 * 60)
+      print 'waiting 30 minutes\n'
+      time.sleep(30 * 60)
       wait = False
-    (remote_id, addr) = connection['server_list'][master_id]
+    (remote_id, addr) = connection['server_list'][0]
     try:
       s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
       s.connect((addr, port + remote_id))
-      print 'alive\n'
       s.close()
     except (socket.error, socket.herror, socket.gaierror, socket.timeout):
-      print 'dead\n'
       s.close()
       election()
 
@@ -120,7 +117,6 @@ while True:
     client_id, message = client_message.split(', ')
     client_id = eval(client_id)
     if message == "Victory":
-      master_id = client_id
       wait = True
       print "%%s wins" %% client_id
     elif message == "Election":
