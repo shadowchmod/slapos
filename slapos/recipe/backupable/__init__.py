@@ -45,10 +45,7 @@ class Backupable(GenericBaseRecipe):
 
   def createBackupScript(self, param_dict):
     self_id = int(param_dict['number'])
-    nbtotal = int(param_dict['nbtotal'])
     ip = param_dict['ip-list'].split()
-    if len(ip) < nbtotal:
-      print 'IPs not gathered yet (got %s) and length is %s \n' % (ip, len(ip))
 
     slap_connection = self.buildout['slap-connection']
 
