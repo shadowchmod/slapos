@@ -31,7 +31,7 @@ import os
 
 
 class Backupable(GenericBaseRecipe):
-  """ Inheriting from this class provides the installation of a backup
+  """ Inheriting from this class provides the installation of the resilience
       script on the partition.
   """
 
@@ -45,13 +45,14 @@ class Backupable(GenericBaseRecipe):
 
   def createBackupScript(self, param_dict):
     self_id = int(param_dict['number'])
-    ip = param_dict['ip-list'].split()
-
+    ip = param_dict['ip-list'].split(' ')
+    print 'Creating bully script with  ips : %s\n' % ip
     slap_connection = self.buildout['slap-connection']
 
     path_conf = os.path.join(self.options['script'], 'conf.in')
     path_bully = os.path.join(self.options['script'], param_dict['script'])
-
+    path_run = os.path.join(self.options['run'], param_dict['wrapper'])
+    print 'paths: %s\n%s\n' % (path_run, path_bully)
     bully_conf = dict(self_id=self_id,
                       ip_list=ip,
                       executable=sys.executable,
@@ -76,7 +77,7 @@ class Backupable(GenericBaseRecipe):
                                      bully_conf))
 
       wrapper = self.createPythonScript(
-          os.path.join(self.options['run'], param_dict['wrapper']),
+          path_run,
           'slapos.recipe.librecipe.execute.execute',
           [path_bully])
     except IOError:
