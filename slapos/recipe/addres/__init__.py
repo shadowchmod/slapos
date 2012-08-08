@@ -30,20 +30,14 @@ import sys
 import os
 
 
-class Backupable(GenericBaseRecipe):
-  """ Inheriting from this class provides the installation of the resilience
+class Recipe(GenericBaseRecipe):
+  """ This class provides the installation of the resilience
       script on the partition.
   """
 
-  def __init__(self, buildout, name, options):
-    """Recipe initialisation"""
-    super(Backupable, self).__init__(buildout, name, options)
+  def install(self):
+    path_list = []
     param_dict = self.getComputerPartitionInstanceParameterDict()
-
-    if 'bully' in param_dict:
-      self.createBackupScript(param_dict)
-
-  def createBackupScript(self, param_dict):
     self_id = int(param_dict['number'])
     ip = param_dict['ip-list'].split(' ')
     print 'Creating bully script with  ips : %s\n' % ip
@@ -70,15 +64,17 @@ class Backupable(GenericBaseRecipe):
                              self.substituteTemplate(
                              self.getTemplateFilename('conf.in.in'),
                              bully_conf))
-
+      path_list.append(conf)
       script = self.createExecutable(path_bully,
                                      self.substituteTemplate(
                                      self.getTemplateFilename('bully.py.in'),
                                      bully_conf))
-
+      path_list.append(script)
       wrapper = self.createPythonScript(
           path_run,
           'slapos.recipe.librecipe.execute.execute',
           [path_bully])
+      path_list.append(wrapper)
     except IOError:
       pass
+    return path_list
