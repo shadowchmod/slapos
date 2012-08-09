@@ -92,6 +92,8 @@ def failure_detect():
       print 'waiting 30 minutes\n'
       time.sleep(30 * 60)
       wait = False
+    if not connction['server_list'][0]:
+      continue
     (remote_id, addr) = connection['server_list'][0]
     try:
       s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
