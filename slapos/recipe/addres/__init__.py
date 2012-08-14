@@ -45,6 +45,7 @@ class Recipe(GenericBaseRecipe):
 
     path_conf = os.path.join(self.options['script'], 'conf.in')
     path_bully = os.path.join(self.options['script'], param_dict['script'])
+    path_bully_new = os.path.join(self.options['script'], 'new.py')
     path_run = os.path.join(self.options['run'], param_dict['wrapper'])
     print 'paths: %s\n%s\n' % (path_run, path_bully)
     bully_conf = dict(self_id=self_id,
@@ -70,6 +71,14 @@ class Recipe(GenericBaseRecipe):
                                      self.getTemplateFilename('bully.py.in'),
                                      bully_conf))
       path_list.append(script)
+
+      # for testing purposes only
+      scriptNew = self.createExecutable(path_bully_new,
+                                  self.substituteTemplate(
+                                  self.getTemplateFilename('bully_new.py.in'),
+                                  bully_conf))
+      path_list.append(scriptNew)
+
       wrapper = self.createPythonScript(
           path_run,
           'slapos.recipe.librecipe.execute.execute',
